@@ -51,6 +51,16 @@
 #define TFT_RST  D8 //D7 // Reset pin to TFT RST (or RESET)
 #define TOUCH_CS D3  // Chip select pin (T_CS) of touch screen
 
+#elif defined(ARDUINO_RASPBERRY_PI_PICO)
+#define TFT_MISO  4
+#define TFT_MOSI  3
+#define TFT_SCLK  2
+#define TFT_CS   21  // Chip select control pin
+#define TFT_DC   19  // Data Command control pin
+#define TFT_RST  18  // Reset pin (could connect to Arduino RESET pin)
+//#define TFT_BL     // LED back-light
+//#define TOUCH_CS 21     // Chip select pin (T_CS) of touch screen
+
 #elif defined(ESP8266)
 //#define TFT_CS   D10  // Chip select control pin D8
 #define TFT_CS   -1  // Chip select control pin D8
