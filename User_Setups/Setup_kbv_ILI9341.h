@@ -1,12 +1,12 @@
 // See SetupX_Template.h for all options available
-//#define ILI9341_DRIVER
+#define ILI9341_DRIVER
 //#define ILI9488_DRIVER
 //#define S6D02A1_DRIVER
 //#define GC9102_DRIVER
 //#define ST7735_DRIVER
 //#define ST7735_BLACKTAB
 //#define ST7789_DRIVER
-#define ST7796_DRIVER
+//#define ST7796_DRIVER
 #if defined(ST7789_DRIVER)
  //#define TFT_SDA_READ //does not work
  //#define TFT_INVERSION_ON
@@ -106,10 +106,11 @@
 #define SMOOTH_FONT
 
 
-// #define SPI_FREQUENCY    8000000
- #define SPI_FREQUENCY    27000000
+ #define SPI_FREQUENCY    8000000
+// #define SPI_FREQUENCY    27000000
 // #define SPI_FREQUENCY  40000000
 // #define SPI_FREQUENCY  80000000
+// #define SPI_FREQUENCY  70000000
 
 #define SPI_READ_FREQUENCY  20000000
 
