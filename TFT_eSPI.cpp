@@ -604,7 +604,7 @@ void TFT_eSPI::init(uint8_t tc)
   tc = tc; // Supress warning
 
   // This loads the driver specific initialisation code  <<<<<<<<<<<<<<<<<<<<< ADD NEW DRIVERS TO THE LIST HERE <<<<<<<<<<<<<<<<<<<<<<<
-#if   defined (ILI9341_DRIVER)
+#if   defined (ILI9341_DRIVER) || defined(ILI9341_2_DRIVER)
     #include "TFT_Drivers/ILI9341_Init.h"
 
 #elif defined (ST7735_DRIVER)
@@ -643,6 +643,9 @@ void TFT_eSPI::init(uint8_t tc)
 
 #elif defined (ST7789_2_DRIVER)
     #include "TFT_Drivers/ST7789_2_Init.h"
+
+#elif defined (SSD1351_DRIVER)
+    #include "TFT_Drivers/SSD1351_Init.h"
 
 #elif defined (SSD1963_DRIVER)
     #include "TFT_Drivers/SSD1963_Init.h"
@@ -690,7 +693,7 @@ void TFT_eSPI::setRotation(uint8_t m)
   begin_tft_write();
 
     // This loads the driver specific rotation code  <<<<<<<<<<<<<<<<<<<<< ADD NEW DRIVERS TO THE LIST HERE <<<<<<<<<<<<<<<<<<<<<<<
-#if   defined (ILI9341_DRIVER)
+#if   defined (ILI9341_DRIVER) || defined(ILI9341_2_DRIVER)
     #include "TFT_Drivers/ILI9341_Rotation.h"
 
 #elif defined (ST7735_DRIVER)
@@ -728,6 +731,9 @@ void TFT_eSPI::setRotation(uint8_t m)
 
 #elif defined (ST7789_2_DRIVER)
     #include "TFT_Drivers/ST7789_2_Rotation.h"
+
+#elif defined (SSD1351_DRIVER)
+    #include "TFT_Drivers/SSD1351_Rotation.h"
 
 #elif defined (SSD1963_DRIVER)
     #include "TFT_Drivers/SSD1963_Rotation.h"
@@ -941,7 +947,7 @@ uint16_t TFT_eSPI::readPixel(int32_t x0, int32_t y0)
   // Fetch the 16 bit BRG pixel
   //uint16_t rgb = (readByte() << 8) | readByte();
 
-  #if defined (ILI9341_DRIVER) | defined (ILI9488_DRIVER) | defined (SSD1963_DRIVER)// Read 3 bytes
+  #if defined (ILI9341_DRIVER)  || defined(ILI9341_2_DRIVER) || defined (ILI9488_DRIVER) || defined (SSD1963_DRIVER)// Read 3 bytes
 
     // Read window pixel 24 bit RGB values and fill in LS bits
     uint16_t rgb = ((readByte() & 0xF8) << 8) | ((readByte() & 0xFC) << 3) | (readByte() >> 3);
@@ -1059,7 +1065,7 @@ void TFT_eSPI::readRect(int32_t x, int32_t y, int32_t w, int32_t h, uint16_t *da
   // Set masked pins D0- D7 to input
   busDir(dir_mask, INPUT);
 
-  #if defined (ILI9341_DRIVER) | defined (ILI9488_DRIVER) // Read 3 bytes
+  #if defined (ILI9341_DRIVER)  || defined(ILI9341_2_DRIVER) || defined (ILI9488_DRIVER) // Read 3 bytes
     // Dummy read to throw away don't care value
     readByte();
 
@@ -3030,11 +3036,11 @@ void TFT_eSPI::setAddrWindow(int32_t x0, int32_t y0, int32_t w, int32_t h)
 void TFT_eSPI::setWindow(int32_t x0, int32_t y0, int32_t x1, int32_t y1)
 {
   //begin_tft_write(); // Must be called before setWindow
-#if defined (ILI9225_DRIVER)
-  if (rotation & 0x01) { swap_coord(x0, y0); swap_coord(x1, y1); }
-
   addr_row = 0xFFFF;
   addr_col = 0xFFFF;
+
+#if defined (ILI9225_DRIVER)
+  if (rotation & 0x01) { swap_coord(x0, y0); swap_coord(x1, y1); }
 
   DC_C; tft_Write_8(TFT_CASET1);
   DC_D; tft_Write_16(x0);
@@ -3054,22 +3060,29 @@ void TFT_eSPI::setWindow(int32_t x0, int32_t y0, int32_t x1, int32_t y1)
   // write to RAM
   DC_C; tft_Write_8(TFT_RAMWR);
   DC_D;
+#elif defined (SSD1351_DRIVER)
+  if (rotation & 1) {
+    swap_coord(x0, y0);
+    swap_coord(x1, y1);
+  }
 
-#else // Not ILI9225
+  DC_C; tft_Write_8(TFT_CASET);
+  DC_D; tft_Write_16(x1 | (x0 << 8));
+  DC_C; tft_Write_8(TFT_PASET);
+  DC_D; tft_Write_16(y1 | (y0 << 8));
+  DC_C; tft_Write_8(TFT_RAMWR);
+  DC_D;
+#else
+  #if defined (SSD1963_DRIVER)
+    if ((rotation & 0x1) == 0) { swap_coord(x0, y0); swap_coord(x1, y1); }
+  #endif
 
-#if defined (SSD1963_DRIVER)
-  if ((rotation & 0x1) == 0) { swap_coord(x0, y0); swap_coord(x1, y1); }
-#endif
-
-  addr_row = 0xFFFF;
-  addr_col = 0xFFFF;
-
-#ifdef CGRAM_OFFSET
-  x0+=colstart;
-  x1+=colstart;
-  y0+=rowstart;
-  y1+=rowstart;
-#endif
+  #ifdef CGRAM_OFFSET
+    x0+=colstart;
+    x1+=colstart;
+    y0+=rowstart;
+    y1+=rowstart;
+  #endif
 
   // Temporary solution is to include the RP2040 optimised code here
   #if defined(ARDUINO_ARCH_RP2040) && !defined(TFT_PARALLEL_8BIT)
@@ -3105,17 +3118,15 @@ void TFT_eSPI::setWindow(int32_t x0, int32_t y0, int32_t x1, int32_t y1)
     DC_D;
 
   #else
-
     DC_C; tft_Write_8(TFT_CASET);
     DC_D; tft_Write_32C(x0, x1);
     DC_C; tft_Write_8(TFT_PASET);
     DC_D; tft_Write_32C(y0, y1);
     DC_C; tft_Write_8(TFT_RAMWR);
     DC_D;
-    //end_tft_write(); // Must be called after setWindow
-
   #endif // RP2040 SPI
 #endif
+  //end_tft_write(); // Must be called after setWindow
 }
 
 
@@ -3308,7 +3319,7 @@ void TFT_eSPI::drawPixel(int32_t x, int32_t y, uint32_t color)
 
 #else
 
-#if defined (SSD1963_DRIVER)
+#if defined (SSD1351_DRIVER) || defined (SSD1963_DRIVER) 
   if ((rotation & 0x1) == 0) { swap_coord(x, y); }
 #endif
 
@@ -3318,6 +3329,20 @@ void TFT_eSPI::drawPixel(int32_t x, int32_t y, uint32_t color)
   DC_D; tft_Write_32D(x);
   DC_C; tft_Write_8(TFT_PASET);
   DC_D; tft_Write_32D(y);
+#elif defined (SSD1351_DRIVER)
+  // No need to send x if it has not changed (speeds things up)
+  if (addr_col != x) {
+    DC_C; tft_Write_8(TFT_CASET);
+    DC_D; tft_Write_16(x | (x << 8));
+    addr_col = x;
+  }
+
+  // No need to send y if it has not changed (speeds things up)
+  if (addr_row != y) {
+    DC_C; tft_Write_8(TFT_PASET);
+    DC_D; tft_Write_16(y | (y << 8));
+    addr_row = y;
+  }
 #else
   // No need to send x if it has not changed (speeds things up)
   if (addr_col != x) {

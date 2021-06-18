@@ -89,6 +89,8 @@
 
 //#include <User_Setups/Setup201_WT32_SC01.h>        // Setup file for ESP32 based WT32_SC01 from Seeed
 
+//#include <User_Setups/Setup202_SSD1351_128.h>      // Setup file for ESP32/ESP8266 based SSD1351 128x128 1.5inch OLED display
+
 //#include <User_Setups/SetupX_Template.h>
 
 
@@ -134,7 +136,7 @@
 #endif
 
 // Load the right driver definition - do not tinker here !
-#if   defined (ILI9341_DRIVER)
+#if   defined (ILI9341_DRIVER) || defined(ILI9341_2_DRIVER)
      #include <TFT_Drivers/ILI9341_Defines.h>
      #define  TFT_DRIVER 0x9341
 #elif defined (ST7735_DRIVER)
@@ -176,6 +178,9 @@
 #elif defined (RM68140_DRIVER)
      #include "TFT_Drivers/RM68140_Defines.h"
      #define  TFT_DRIVER 0x6814
+#elif defined (SSD1351_DRIVER)
+     #include "TFT_Drivers/SSD1351_Defines.h"
+     #define  TFT_DRIVER 0x1351
 #elif defined (SSD1963_480_DRIVER)
      #include "TFT_Drivers/SSD1963_Defines.h"
      #define  TFT_DRIVER 0x1963
