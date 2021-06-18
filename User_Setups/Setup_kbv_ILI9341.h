@@ -1,11 +1,11 @@
 // See SetupX_Template.h for all options available
-//#define ILI9341_DRIVER
+#define ILI9341_DRIVER
 //#define ILI9488_DRIVER
 //#define S6D02A1_DRIVER
 //#define GC9102_DRIVER
 //#define ST7735_DRIVER
 //#define ST7735_BLACKTAB
-#define ST7789_DRIVER
+//#define ST7789_DRIVER
 //#define ST7796_DRIVER
 #if defined(ST7789_DRIVER)
  //#define TFT_SDA_READ //does not work
@@ -47,7 +47,7 @@
 #define TFT_SCLK PB13
 //#define TOUCH_CS PA5  // Chip select pin (T_CS) of touch screen
 #elif defined(STM32)
-#define TFT_CS   -1 //D10 //D5 // Chip select control pin to TFT CS
+#define TFT_CS   D10 //D10 //D5 // Chip select control pin to TFT CS
 #define TFT_DC   D9 //D6 // Data Command control pin to TFT DC (may be labelled RS = Register Select)
 #define TFT_RST  D8 //D7 // Reset pin to TFT RST (or RESET)
 #define TOUCH_CS D3  // Chip select pin (T_CS) of touch screen
@@ -88,7 +88,7 @@
 //#define TFT_MISO            19
 //#define TFT_SCLK            18
 //#define TFT_CS   -1  // Chip select control pin D8
-#define TFT_CS   -1 //5  // Chip select control pin D8
+#define TFT_CS   5 //5  // Chip select control pin D8
 #define TFT_DC   13  // Data Command control pin
 #define TFT_RST  12  // Reset pin (could connect to NodeMCU RST, see next line)
 //#define TFT_RST  -1    // Set TFT_RST to -1 if the display RESET is connected to NodeMCU RST or 3.3V
